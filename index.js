@@ -304,6 +304,9 @@ function moveSelectedPiece(moveCount) {
   const didCapture = captureOpponentPieces(piece);
   const stackedCount = stackFriendlyPieces(piece);
 
+  syncStackedPieces(piece);
+  renderPiece(piece);
+
   return {
     moved: true,
     didCapture,
@@ -399,26 +402,47 @@ moveBtn.addEventListener('click', () => {
 ////////// 업기 추가 코드
 
 function stackFriendlyPieces(movedPiece) {
-  let stackedCount = 0;
+  let addedCount = 0;
+  const mergedIds = new Set(movedPiece.stackedIds);
 
   pieces.forEach(piece => {
     if (piece.id === movedPiece.id) return;
     if (piece.player !== movedPiece.player) return;
     if (piece.position !== movedPiece.position) return;
     if (piece.position === 0 || piece.position === 'goal') return;
+
+    // 업혀 있는 말은 직접 처리하지 말고 대표만 처리
     if (piece.leaderId !== null) return;
 
-    movedPiece.stackedIds.push(piece.id);
-    piece.leaderId = movedPiece.id;
-    piece.isStackHidden = true;
+    // piece는 같은 칸의 "대표 말" 또는 단독 말
+    const idsToMerge = [piece.id, ...piece.stackedIds];
 
-    stackedCount += 1;
-    renderPiece(piece);
+    idsToMerge.forEach(id => {
+      if (mergedIds.has(id)) return;
+
+      const targetPiece = pieces.find(p => p.id === id);
+      if (!targetPiece) return;
+
+      mergedIds.add(id);
+      movedPiece.stackedIds.push(id);
+
+      targetPiece.leaderId = movedPiece.id;
+      targetPiece.isStackHidden = true;
+      targetPiece.position = movedPiece.position;
+      targetPiece.prev = movedPiece.prev;
+
+      // 대표였던 말은 이제 대표가 아니므로 자기 stackedIds 비움
+      if (targetPiece.id === piece.id) {
+        targetPiece.stackedIds = [];
+      }
+
+      renderPiece(targetPiece);
+      addedCount += 1;
+    });
   });
 
   renderPiece(movedPiece);
-
-  return stackedCount;
+  return addedCount;
 }
 
 function syncStackedPieces(leaderPiece) {
