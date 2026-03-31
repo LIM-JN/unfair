@@ -61,10 +61,18 @@
           <div class="inner-cell path2 q5" data-node="204">204</div>
         </div>
     </div>
-    <div class="piece player-a" data-piece-id="A1"></div>
+    <div class="piece player-a is-home" id="piece-A1" data-piece-id="A1">A1</div>
+    <div class="piece player-a is-home" id="piece-A2" data-piece-id="A2">A2</div>
+    <div class="piece player-a is-home" id="piece-A3" data-piece-id="A3">A3</div>
+    <div class="piece player-a is-home" id="piece-A4" data-piece-id="A4">A4</div>
+    <div class="piece player-b is-home" id="piece-B1" data-piece-id="B1">B1</div>
+    <div class="piece player-b is-home" id="piece-B2" data-piece-id="B2">B2</div>
+    <div class="piece player-b is-home" id="piece-B3" data-piece-id="B3">B3</div>
+    <div class="piece player-b is-home" id="piece-B4" data-piece-id="B4">B4</div>
 </main>
 <section>
 <div class="yut-area">
+  <p>현재 턴: <span id="turnText">A</span></p>
   <div class="sticks">
     <div class="stick" id="stick1">?</div>
     <div class="stick" id="stick2">?</div>
@@ -73,8 +81,40 @@
   </div>
 
   <button id="throwBtn">윷 던지기</button>
-  <button id="moveBtn">말 움직이기</button>
+  <div class="piece-select">
+    <input type="radio" name="p1" id="select-A1" value="A1" checked>
+    <label for="select-A1">A1</label>
+
+    <input type="radio" name="p1" id="select-A2" value="A2">
+    <label for="select-A2">A2</label>
+
+    <input type="radio" name="p1" id="select-A3" value="A3">
+    <label for="select-A3">A3</label>
+
+    <input type="radio" name="p1" id="select-A4" value="A4">
+    <label for="select-A4">A4</label>
+  </div>
+  <div class="piece-select">
+    <input type="radio" name="p2" id="select-B1" value="B1" checked disabled>
+    <label for="select-B1">B1</label>
+
+    <input type="radio" name="p2" id="select-B2" value="B2" disabled>
+    <label for="select-B2">B2</label>
+
+    <input type="radio" name="p2" id="select-B3" value="B3" disabled>
+    <label for="select-B3">B3</label>
+
+    <input type="radio" name="p2" id="select-B4" value="B4" disabled>
+    <label for="select-B4">B4</label>
+  </div>
+  <button id="moveBtn" disabled>말 움직이기</button>
   <p id="resultText">결과: -</p>
+  <p>
+    점수 
+    <span id="score1" style="color:crimson">0</span>
+     : 
+    <span id="score2" style="color:royalblue">0</span>
+  </p>
 </div>
 </section>
 <footer></footer>

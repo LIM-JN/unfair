@@ -43,21 +43,20 @@ const boardPath = {
 
 
 const pieces = [
-  { id: 'A1', player: 'A', position: 1, prev: null },
-  { id: 'A2', player: 'A', position: 1, prev: null },
-  { id: 'B1', player: 'B', position: 10, prev: 9 }
+  { id: 'A1', player: 'A', position: 0, prev: null, isHome: true },
+  { id: 'A2', player: 'A', position: 0, prev: null, isHome: true },
+  { id: 'A3', player: 'A', position: 0, prev: null, isHome: true },
+  { id: 'A4', player: 'A', position: 0, prev: null, isHome: true },
+  { id: 'B1', player: 'B', position: 0, prev: null, isHome: true },
+  { id: 'B2', player: 'B', position: 0, prev: null, isHome: true },
+  { id: 'B3', player: 'B', position: 0, prev: null, isHome: true },
+  { id: 'B4', player: 'B', position: 0, prev: null, isHome: true }
 ];
 
 const gameState = {
   move: 0,
   resultName: '',
-  pieces: [
-    {
-      id: 'A1',
-      position: 0,
-      prev: null
-    }
-  ]
+  currentPlayer: 'A'
 };
 
 
@@ -101,6 +100,11 @@ function getYutResult(frontCount) {
 
 
 function throwYut() {
+  if (gameState.move > 0) {
+    alert('먼저 말을 움직여주세요.');
+    return;
+  }
+
   const values = [];
 
   for (let i = 0; i < 4; i++) {
@@ -113,13 +117,20 @@ function throwYut() {
   });
 
   const frontCount = values.filter(v => v === 'O').length;
-  const result = getYutResult(frontCount);
   const move = frontCount === 0 ? 5 : frontCount;
+  const result = getYutResult(frontCount);
 
   gameState.move = move;
-  gameState.resultName = result;
-
   resultText.textContent = `결과: ${values.join('')} → ${result} (${move}칸)`;
+  updateButtons();
+}
+
+function resetYutDisplay() {
+  stickEls.forEach((el) => {
+    el.textContent = '?';
+  });
+
+  resultText.textContent = '결과: -';
 }
 
 throwBtn.addEventListener('click', throwYut);
@@ -130,6 +141,12 @@ const pieceEl = document.querySelector('.piece');
 function getNodeCenter(nodeId) {
   const nodeEl = document.querySelector(`[data-node="${nodeId}"]`);
   const boardRect = board.getBoundingClientRect();
+
+  if (!nodeEl) {
+    console.warn(`data-node="${nodeId}" 요소를 찾을 수 없습니다.`);
+    return null;
+  }
+
   const nodeRect = nodeEl.getBoundingClientRect();
 
   return {
@@ -146,18 +163,46 @@ function movePieceTo(nodeId) {
 }
 
 function movePiece(piece, moveCount) {
-  const useBranch = [5, 10, 103].includes(piece.position);
+  let useBranch = [5, 10, 103].includes(piece.position);
 
   for (let i = 0; i < moveCount; i++) {
-    const next = getNextPosition(piece.position, piece.prev, useBranch);
+    const current = piece.position;
+    const next = getNextPosition(current, piece.prev, useBranch);
 
     if (next === null || next === undefined) break;
 
-    piece.prev = piece.position;
+    // 숏컷을 실제로 사용한 순간 이후에는 끈다
+    if (
+      (current === 5 && next === 101) ||
+      (current === 10 && next === 201) ||
+      (current === 103 && piece.prev === 102 && next === 203)
+    ) {
+      useBranch = false;
+    }
+
+    piece.prev = current;
     piece.position = next;
 
-    if (next === 'goal') break;
+
+    if (next === 'goal') {
+        handleScore(piece);
+        break;
+    }
   }
+  console.log(piece.position);
+}
+
+function handleScore(piece) {
+  const scoreId = piece.player === 'A' ? 'score1' : 'score2';
+  const scoreEl = document.getElementById(scoreId);
+
+  scoreEl.textContent = Number(scoreEl.textContent) + 1;
+
+  piece.position = 'goal';
+  piece.prev = null;
+  piece.isHome = true;
+
+  renderPiece(piece);
 }
 
 function getNextPosition(current, prev = null, useBranch = false) {
@@ -178,12 +223,16 @@ function getNextPosition(current, prev = null, useBranch = false) {
 }
 
 function renderPiece(piece) {
-  if (piece.position === 'goal') {
-    pieceEl.style.display = 'none';
+  const pieceEl = document.getElementById(`piece-${piece.id}`);
+
+  if (!pieceEl) return;
+
+  if (piece.position === 0 || piece.position === 'goal') {
+    pieceEl.classList.add('is-home');
     return;
   }
 
-  pieceEl.style.display = 'block';
+  pieceEl.classList.remove('is-home');
 
   const { x, y } = getNodeCenter(piece.position);
 
@@ -192,18 +241,90 @@ function renderPiece(piece) {
 }
 
 
+function moveSelectedPiece(moveCount) {
+  const radioName = gameState.currentPlayer === 'A' ? 'p1' : 'p2';
+  const selected = document.querySelector(`input[name="${radioName}"]:checked`);
+
+  if (!selected) {
+    alert('말을 선택해주세요.');
+    return false;
+  }
+
+  const piece = pieces.find(
+    p => p.id === selected.value && p.player === gameState.currentPlayer
+  );
+
+  if (!piece) {
+    alert('선택한 말을 찾을 수 없습니다.');
+    return false;
+  }
+
+  if (piece.position === 'goal') {
+    alert('이미 완주한 말입니다.');
+    return false;
+  }
+
+  if (piece.isHome) {
+    piece.isHome = false;
+  }
+
+  movePiece(piece, moveCount);
+  renderPiece(piece);
+
+  return true;
+}
+
+function updateButtons() {
+  throwBtn.disabled = gameState.move > 0;
+  moveBtn.disabled = gameState.move <= 0;
+}
+
+function switchTurn() {
+  gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+}
+
+function updateTurnUI() {
+  document.getElementById('turnText').textContent = gameState.currentPlayer;
+}
+
+function updatePieceSelectUI() {
+  const isATurn = gameState.currentPlayer === 'A';
+
+  document.querySelectorAll('input[name="p1"]').forEach(el => {
+    el.disabled = !isATurn;
+  });
+
+  document.querySelectorAll('input[name="p2"]').forEach(el => {
+    el.disabled = isATurn;
+  });
+}
+
 const moveBtn = document.querySelector('#moveBtn');
 
-moveBtn.addEventListener('click',() => {
-    const piece = gameState.pieces[0];
+moveBtn.addEventListener('click', () => {
 
   if (gameState.move <= 0) {
     alert('먼저 윷을 던져서 이동값을 정하세요.');
     return;
   }
 
-  movePiece(piece, gameState.move);
-  renderPiece(piece);
+  const moved = moveSelectedPiece(gameState.move);
+
+  if (!moved) {
+    return;
+  }
+
+  const move = gameState.move;
 
   gameState.move = 0;
-})
+
+  // 윷(4) 또는 모(5)일 때 턴 유지
+  if (move !== 4 && move !== 5) {
+    switchTurn();
+  }
+
+  updateTurnUI();
+  updatePieceSelectUI();
+  resetYutDisplay();
+  updateButtons();
+});

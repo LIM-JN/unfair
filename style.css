@@ -53,6 +53,8 @@ table {
 
 body {
   user-select: none;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 main {
@@ -147,11 +149,12 @@ main {
 }
 
 .yut-area {
-  margin-top: 40px;
+  margin-top: 70px;
+  margin-left: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 20px;
+  gap: 30px;
 }
 
 .sticks {
@@ -173,11 +176,14 @@ main {
 
 .piece {
   position: absolute;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   z-index: 10;
   transition: top 0.25s, left 0.25s;
+  text-align: center;
+  color: white;
+  line-height: 2;
 }
 
 .player-a {
@@ -186,4 +192,10 @@ main {
 
 .player-b {
   background: royalblue;
+}
+
+
+.piece.is-home {
+  opacity: 0;
+  pointer-events: none;
 }
