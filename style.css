@@ -1,0 +1,189 @@
+/* 1. 모든 요소 기본 마진/패딩 제거 + box-sizing 통일 */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. html, body 기본 설정 */
+html, body {
+  height: 100%;
+  font-family: sans-serif;
+  line-height: 1.5;
+}
+
+/* 3. 리스트 스타일 제거 */
+ul, ol {
+  list-style: none;
+}
+
+/* 4. 링크 기본 스타일 제거 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 5. 이미지, 비디오 반응형 */
+img, video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* 6. 버튼, 입력 요소 기본 스타일 정리 */
+button, input, textarea, select {
+  font: inherit;
+  border: none;
+  outline: none;
+  background: none;
+}
+
+/* 7. 버튼 커서 */
+button {
+  cursor: pointer;
+}
+
+/* 8. 테이블 초기화 */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+body {
+  user-select: none;
+}
+
+main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.board {
+  position: relative;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(6, 120px);
+  grid-template-rows: repeat(6, 120px);
+  gap: 4px;
+  position:relative
+}
+
+.cell {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #333;
+  background-color: #f2f2f2;
+  margin: 30px;
+}
+
+.nope {
+  visibility: hidden;
+}
+
+.inner-path {
+  position: absolute;
+  inset: 0;
+}
+
+.inner-cell {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border: 1px solid #333;
+  background-color: rgba(174, 174, 174, 0.5);
+}
+
+/* 중앙 */
+.center {
+  top: 342px;
+  left: 342px;
+}
+
+/* 좌하 -> 중앙 -> 우상 */
+.p1 {
+  top: 526px;
+  left: 158px;
+}
+
+.p2 {
+  top: 434px;
+  left: 250px;
+}
+
+.p4 {
+  top: 250px;
+  left: 434px;
+}
+
+.p5 {
+  top: 158px;
+  left: 526px;
+}
+
+/* 좌상 -> 중앙 -> 우하 */
+.q1 {
+  top: 158px;
+  left: 158px;
+}
+
+.q2 {
+  top: 250px;
+  left: 250px;
+}
+
+.q4 {
+  top: 434px;
+  left: 434px;
+}
+
+.q5 {
+  top: 526px;
+  left: 526px;
+}
+
+.yut-area {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.sticks {
+  display: flex;
+  gap: 12px;
+}
+
+.stick {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #333;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.piece {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  z-index: 10;
+  transition: top 0.25s, left 0.25s;
+}
+
+.player-a {
+  background: crimson;
+}
+
+.player-b {
+  background: royalblue;
+}

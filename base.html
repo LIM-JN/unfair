@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>unfair</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+    <header></header>
+<main class="board">
+    <div class="grid">
+        <div class="cell" data-node="10">10</div>
+        <div class="cell" data-node="9">9</div>
+        <div class="cell" data-node="8">8</div>
+        <div class="cell" data-node="7">7</div>
+        <div class="cell" data-node="6">6</div>
+        <div class="cell" data-node="5">5</div>
+        <div class="cell" data-node="11">11</div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell" data-node="4">4</div>
+        <div class="cell" data-node="12">12</div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell" data-node="3">3</div>
+        <div class="cell" data-node="13">13</div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell" data-node="2">2</div>
+        <div class="cell" data-node="14">14</div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell nope"></div>
+        <div class="cell" data-node="1">1</div>
+        <div class="cell" data-node="15">15</div>
+        <div class="cell" data-node="16">16</div>
+        <div class="cell" data-node="17">17</div>
+        <div class="cell" data-node="18">18</div>
+        <div class="cell" data-node="19">19</div>
+        <div class="cell" data-node="20">20</div>
+        <div class="inner-path">
+          <!-- 좌하 -> 중앙 -> 우상 대각선 -->
+          <div class="inner-cell path1 p1" data-node="105">105</div>
+          <div class="inner-cell path1 p2" data-node="104">104</div>
+          <div class="inner-cell path1 center" data-node="103">103</div>
+          <div class="inner-cell path1 p4" data-node="102">102</div>
+          <div class="inner-cell path1 p5" data-node="101">101</div>
+    
+          <!-- 좌상 -> 중앙 -> 우하 대각선 -->
+          <div class="inner-cell path2 q1" data-node="201">201</div>
+          <div class="inner-cell path2 q2" data-node="202">202</div>
+          <div class="inner-cell path2 q4" data-node="203">203</div>
+          <div class="inner-cell path2 q5" data-node="204">204</div>
+        </div>
+    </div>
+    <div class="piece player-a" data-piece-id="A1"></div>
+</main>
+<section>
+<div class="yut-area">
+  <div class="sticks">
+    <div class="stick" id="stick1">?</div>
+    <div class="stick" id="stick2">?</div>
+    <div class="stick" id="stick3">?</div>
+    <div class="stick" id="stick4">?</div>
+  </div>
+
+  <button id="throwBtn">윷 던지기</button>
+  <button id="moveBtn">말 움직이기</button>
+  <p id="resultText">결과: -</p>
+</div>
+</section>
+<footer></footer>
+<script src="./index.js"></script>
+</body>
+</html>
