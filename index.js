@@ -55,8 +55,8 @@ const pieces = [
 
 const gameState = {
   move: 0,
-  resultName: '',
-  currentPlayer: 'A'
+  currentPlayer: 'A',
+  isGameOver: false
 };
 
 
@@ -100,6 +100,8 @@ function getYutResult(frontCount) {
 
 
 function throwYut() {
+  if (gameState.isGameOver) return;
+
   if (gameState.move > 0) {
     alert('먼저 말을 움직여주세요.');
     return;
@@ -122,6 +124,7 @@ function throwYut() {
 
   gameState.move = move;
   resultText.textContent = `결과: ${values.join('')} → ${result} (${move}칸)`;
+
   updateButtons();
 }
 
@@ -189,7 +192,6 @@ function movePiece(piece, moveCount) {
         break;
     }
   }
-  console.log(piece.position);
 }
 
 function handleScore(piece) {
@@ -198,11 +200,27 @@ function handleScore(piece) {
 
   scoreEl.textContent = Number(scoreEl.textContent) + 1;
 
-  piece.position = 'goal';
+  piece.position = 'goal';   // 중요
   piece.prev = null;
-  piece.isHome = true;
+  piece.isHome = false;      // home 아님
 
   renderPiece(piece);
+
+  checkWinner(piece.player);
+}
+
+function checkWinner(player) {
+  const scoreId = player === 'A' ? 'score1' : 'score2';
+  const score = Number(document.getElementById(scoreId).textContent);
+
+  if (score >= 4) {
+    gameState.isGameOver = true;
+
+    document.getElementById('gameMessage').textContent = `${player} 플레이어 승리!`;
+    alert(`${player} 플레이어 승리!`);
+
+    updateButtons();
+  }
 }
 
 function getNextPosition(current, prev = null, useBranch = false) {
@@ -271,10 +289,21 @@ function moveSelectedPiece(moveCount) {
   movePiece(piece, moveCount);
   renderPiece(piece);
 
-  return true;
+  const didCapture = captureOpponentPieces(piece);
+
+  return {
+    moved: true,
+    didCapture
+  };
 }
 
 function updateButtons() {
+  if (gameState.isGameOver) {
+    throwBtn.disabled = true;
+    moveBtn.disabled = true;
+    return;
+  }
+
   throwBtn.disabled = gameState.move > 0;
   moveBtn.disabled = gameState.move <= 0;
 }
@@ -299,9 +328,30 @@ function updatePieceSelectUI() {
   });
 }
 
+function captureOpponentPieces(movedPiece) {
+  let captured = false;
+
+  pieces.forEach(piece => {
+    if (piece.id === movedPiece.id) return;
+    if (piece.player === movedPiece.player) return;
+    if (piece.position === 0 || piece.position === 'goal') return;
+
+    if (piece.position === movedPiece.position) {
+      piece.position = 0;
+      piece.prev = null;
+      piece.isHome = true;
+      renderPiece(piece);
+      captured = true;
+    }
+  });
+
+  return captured;
+}
+
 const moveBtn = document.querySelector('#moveBtn');
 
 moveBtn.addEventListener('click', () => {
+  if (gameState.isGameOver) return;
 
   if (gameState.move <= 0) {
     alert('먼저 윷을 던져서 이동값을 정하세요.');
@@ -315,11 +365,9 @@ moveBtn.addEventListener('click', () => {
   }
 
   const move = gameState.move;
-
   gameState.move = 0;
 
-  // 윷(4) 또는 모(5)일 때 턴 유지
-  if (move !== 4 && move !== 5) {
+  if (!gameState.isGameOver && move !== 4 && move !== 5 && !moved.didCapture) {
     switchTurn();
   }
 

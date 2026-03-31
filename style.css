@@ -199,3 +199,14 @@ main {
   opacity: 0;
   pointer-events: none;
 }
+
+button {
+    padding: 8px 20px ;
+    border: 1px solid #333;
+    border-radius: 999px;
+    transition:0.2s;
+}
+
+button:hover {
+    background-color: #ccc;
+}
