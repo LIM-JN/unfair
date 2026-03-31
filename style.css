@@ -209,6 +209,11 @@ button {
     transition:0.2s;
 }
 
+button:disabled {
+    border: 1px solid #ccc;
+    pointer-events: none;
+}
+
 button:hover {
     background-color: #ccc;
 }
