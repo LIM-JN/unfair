@@ -5,25 +5,21 @@ const boardPath = {
   3: { next: 4 },
   4: { next: 5 },
   5: { next: 6, branch: 101 },
-
   6: { next: 7 },
   7: { next: 8 },
   8: { next: 9 },
   9: { next: 10 },
   10: { next: 11, branch: 201 },
-
   11: { next: 12 },
   12: { next: 13 },
   13: { next: 14 },
   14: { next: 15 },
   15: { next: 16 },
-
   16: { next: 17 },
   17: { next: 18 },
   18: { next: 19 },
   19: { next: 20 },
   20: { next: 'goal' },
-
   101: { next: 102 },
   102: { next: 103 },
   103: {
@@ -34,7 +30,6 @@ const boardPath = {
   },
   104: { next: 105 },
   105: { next: 15 },
-
   201: { next: 202 },
   202: { next: 103 },
   203: { next: 204 },
@@ -43,14 +38,14 @@ const boardPath = {
 
 
 const pieces = [
-  { id: 'A1', player: 'A', position: 0, prev: null, isHome: true },
-  { id: 'A2', player: 'A', position: 0, prev: null, isHome: true },
-  { id: 'A3', player: 'A', position: 0, prev: null, isHome: true },
-  { id: 'A4', player: 'A', position: 0, prev: null, isHome: true },
-  { id: 'B1', player: 'B', position: 0, prev: null, isHome: true },
-  { id: 'B2', player: 'B', position: 0, prev: null, isHome: true },
-  { id: 'B3', player: 'B', position: 0, prev: null, isHome: true },
-  { id: 'B4', player: 'B', position: 0, prev: null, isHome: true }
+  { id: 'A1', player: 'A', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false},
+  { id: 'A2', player: 'A', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false },
+  { id: 'A3', player: 'A', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false },
+  { id: 'A4', player: 'A', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false },
+  { id: 'B1', player: 'B', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false },
+  { id: 'B2', player: 'B', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false },
+  { id: 'B3', player: 'B', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false},
+  { id: 'B4', player: 'B', position: 0, prev: null, isHome: true, leaderId: null, stackedIds: [], isStackHidden: false }
 ];
 
 const gameState = {
@@ -107,25 +102,38 @@ function throwYut() {
     return;
   }
 
-  const values = [];
+  throwBtn.disabled = true;
+  resultText.textContent = '결과: 던지는 중...';
 
-  for (let i = 0; i < 4; i++) {
-    const isFront = Math.random() < 0.5;
-    values.push(isFront ? 'O' : 'X');
-  }
+  const animation = setInterval(() => {
+    stickEls.forEach(el => {
+      el.textContent = Math.random() < 0.5 ? 'O' : 'X';
+    });
+  }, 40);
 
-  stickEls.forEach((el, idx) => {
-    el.textContent = values[idx];
-  });
+  setTimeout(() => {
+    clearInterval(animation);
 
-  const frontCount = values.filter(v => v === 'O').length;
-  const move = frontCount === 0 ? 5 : frontCount;
-  const result = getYutResult(frontCount);
+    const values = [];
 
-  gameState.move = move;
-  resultText.textContent = `결과: ${values.join('')} → ${result} (${move}칸)`;
+    for (let i = 0; i < 4; i++) {
+      const isFront = Math.random() < 0.5;
+      values.push(isFront ? 'O' : 'X');
+    }
 
-  updateButtons();
+    stickEls.forEach((el, idx) => {
+      el.textContent = values[idx];
+    });
+
+    const frontCount = values.filter(v => v === 'O').length;
+    const move = frontCount === 0 ? 5 : frontCount;
+    const result = getYutResult(frontCount);
+
+    gameState.move = move;
+    resultText.textContent = `결과: ${values.join('')} → ${result} (${move}칸)`;
+
+    updateButtons();
+  }, 400);
 }
 
 function resetYutDisplay() {
@@ -195,16 +203,19 @@ function movePiece(piece, moveCount) {
 }
 
 function handleScore(piece) {
-  const scoreId = piece.player === 'A' ? 'score1' : 'score2';
-  const scoreEl = document.getElementById(scoreId);
+  const stackedIds = [...piece.stackedIds];
+  const totalCount = 1 + stackedIds.length;
 
-  scoreEl.textContent = Number(scoreEl.textContent) + 1;
+  addScore(piece.player, totalCount);
 
-  piece.position = 'goal';   // 중요
-  piece.prev = null;
-  piece.isHome = false;      // home 아님
+  stackedIds.forEach(stackedId => {
+    const stackedPiece = pieces.find(p => p.id === stackedId);
+    if (!stackedPiece) return;
 
-  renderPiece(piece);
+    sendPieceGoal(stackedPiece);
+  });
+
+  sendPieceGoal(piece);
 
   checkWinner(piece.player);
 }
@@ -242,20 +253,22 @@ function getNextPosition(current, prev = null, useBranch = false) {
 
 function renderPiece(piece) {
   const pieceEl = document.getElementById(`piece-${piece.id}`);
-
   if (!pieceEl) return;
 
-  if (piece.position === 0 || piece.position === 'goal') {
+  if (piece.isStackHidden || piece.position === 0 || piece.position === 'goal') {
     pieceEl.classList.add('is-home');
     return;
   }
 
+  const pos = getNodeCenter(piece.position);
+  if (!pos) return;
+
   pieceEl.classList.remove('is-home');
+  pieceEl.style.left = `${pos.x - pieceEl.offsetWidth / 2}px`;
+  pieceEl.style.top = `${pos.y - pieceEl.offsetHeight / 2}px`;
 
-  const { x, y } = getNodeCenter(piece.position);
-
-  pieceEl.style.left = `${x - pieceEl.offsetWidth / 2}px`;
-  pieceEl.style.top = `${y - pieceEl.offsetHeight / 2}px`;
+  const stackSize = piece.stackedIds.length;
+  pieceEl.textContent = stackSize > 0 ? `${piece.id}+${stackSize}` : piece.id;
 }
 
 
@@ -282,18 +295,26 @@ function moveSelectedPiece(moveCount) {
     return false;
   }
 
+  if (piece.leaderId !== null) {
+    alert('업혀 있는 말은 직접 움직일 수 없습니다.');
+    return false;
+  }
+
   if (piece.isHome) {
     piece.isHome = false;
   }
 
   movePiece(piece, moveCount);
+  syncStackedPieces(piece);
   renderPiece(piece);
 
   const didCapture = captureOpponentPieces(piece);
+  const stackedCount = stackFriendlyPieces(piece);
 
   return {
     moved: true,
-    didCapture
+    didCapture,
+    didStack: stackedCount > 0
   };
 }
 
@@ -330,19 +351,24 @@ function updatePieceSelectUI() {
 
 function captureOpponentPieces(movedPiece) {
   let captured = false;
+  const processedLeaderIds = new Set();
 
   pieces.forEach(piece => {
     if (piece.id === movedPiece.id) return;
     if (piece.player === movedPiece.player) return;
     if (piece.position === 0 || piece.position === 'goal') return;
+    if (piece.position !== movedPiece.position) return;
 
-    if (piece.position === movedPiece.position) {
-      piece.position = 0;
-      piece.prev = null;
-      piece.isHome = true;
-      renderPiece(piece);
-      captured = true;
-    }
+    const targetLeader = piece.leaderId
+      ? pieces.find(p => p.id === piece.leaderId)
+      : piece;
+
+    if (!targetLeader) return;
+    if (processedLeaderIds.has(targetLeader.id)) return;
+
+    processedLeaderIds.add(targetLeader.id);
+    sendStackHome(targetLeader);
+    captured = true;
   });
 
   return captured;
@@ -376,3 +402,80 @@ moveBtn.addEventListener('click', () => {
   resetYutDisplay();
   updateButtons();
 });
+
+////////// 업기 추가 코드
+
+function stackFriendlyPieces(movedPiece) {
+  let stackedCount = 0;
+
+  pieces.forEach(piece => {
+    if (piece.id === movedPiece.id) return;
+    if (piece.player !== movedPiece.player) return;
+    if (piece.position !== movedPiece.position) return;
+    if (piece.position === 0 || piece.position === 'goal') return;
+    if (piece.leaderId !== null) return;
+
+    movedPiece.stackedIds.push(piece.id);
+    piece.leaderId = movedPiece.id;
+    piece.isStackHidden = true;
+
+    stackedCount += 1;
+    renderPiece(piece);
+  });
+
+  renderPiece(movedPiece);
+
+  return stackedCount;
+}
+
+function syncStackedPieces(leaderPiece) {
+  leaderPiece.stackedIds.forEach(stackedId => {
+    const stackedPiece = pieces.find(piece => piece.id === stackedId);
+    if (!stackedPiece) return;
+
+    stackedPiece.position = leaderPiece.position;
+    stackedPiece.prev = leaderPiece.prev;
+  });
+}
+
+function sendPieceGoal(piece) {
+  piece.position = 'goal';
+  piece.prev = null;
+  piece.isHome = false;
+  piece.leaderId = null;
+  piece.stackedIds = [];
+  piece.isStackHidden = false;
+
+  renderPiece(piece);
+}
+
+function sendStackHome(leaderPiece) {
+  const stackedIds = [...leaderPiece.stackedIds];
+
+  stackedIds.forEach(stackedId => {
+    const stackedPiece = pieces.find(piece => piece.id === stackedId);
+    if (!stackedPiece) return;
+
+    sendPieceHome(stackedPiece);
+  });
+
+  sendPieceHome(leaderPiece);
+}
+
+function addScore(player, amount = 1) {
+  const scoreId = player === 'A' ? 'score1' : 'score2';
+  const scoreEl = document.getElementById(scoreId);
+
+  scoreEl.textContent = Number(scoreEl.textContent) + amount;
+}
+
+function sendPieceHome(piece) {
+  piece.position = 0;
+  piece.prev = null;
+  piece.isHome = true;
+  piece.leaderId = null;
+  piece.stackedIds = [];
+  piece.isStackHidden = false;
+
+  renderPiece(piece);
+}

@@ -178,14 +178,14 @@ main {
 
 .piece {
   position: absolute;
-  width: 32px;
-  height: 32px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   z-index: 10;
   transition: top 0.25s, left 0.25s;
   text-align: center;
   color: white;
-  line-height: 2;
+  line-height: 2.4;
 }
 
 .player-a {
