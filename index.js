@@ -147,7 +147,6 @@ function resetYutDisplay() {
 throwBtn.addEventListener('click', throwYut);
 
 const board = document.querySelector('.board');
-const pieceEl = document.querySelector('.piece');
 
 function getNodeCenter(nodeId) {
   const nodeEl = document.querySelector(`[data-node="${nodeId}"]`);
@@ -166,12 +165,6 @@ function getNodeCenter(nodeId) {
   };
 }
 
-function movePieceTo(nodeId) {
-  const { x, y } = getNodeCenter(nodeId);
-
-  pieceEl.style.left = `${x - pieceEl.offsetWidth / 2}px`;
-  pieceEl.style.top = `${y - pieceEl.offsetHeight / 2}px`;
-}
 
 function movePiece(piece, moveCount) {
   let useBranch = [5, 10, 103].includes(piece.position);
@@ -470,6 +463,14 @@ function addScore(player, amount = 1) {
 }
 
 function sendPieceHome(piece) {
+
+  const pos = getNodeCenter(20)
+  const pieceEl = document.getElementById(`piece-${piece.id}`);
+  if (!pieceEl) return;
+
+  pieceEl.style.left = `${pos.x - pieceEl.offsetWidth / 2}px`;
+  pieceEl.style.top = `${pos.y - pieceEl.offsetHeight / 2}px`;
+
   piece.position = 0;
   piece.prev = null;
   piece.isHome = true;
