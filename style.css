@@ -55,6 +55,8 @@ body {
   user-select: none;
   display: flex;
   flex-wrap: wrap;
+  margin: auto;
+  justify-content: center;
 }
 
 main {
@@ -208,5 +210,38 @@ button {
 }
 
 button:hover {
+    background-color: #ccc;
+}
+
+label {
+    padding:4px 8px;
+    border: 1px solid #333;
+    margin-right: 6px;
+    cursor: pointer;
+}
+
+label:hover {
+    background-color: #ccc;
+}
+
+label:last-child {
+    margin-right: 0;
+}
+
+input[type="radio"] {
+    display: none;
+}
+
+input[type="radio"]:disabled + label {
+    opacity: 0.2;
+    cursor: default;
+    pointer-events: none;
+}
+
+input[type="radio"]:disabled + label:hover {
+    background-color: #fff;
+}
+
+input[type="radio"]:checked + label {
     background-color: #ccc;
 }
