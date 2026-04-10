@@ -105,6 +105,14 @@ function throwYut() {
   throwBtn.disabled = true;
   resultText.textContent = '결과: 던지는 중...';
 
+  const isATurn = gameState.currentPlayer === 'A';
+
+  if (isATurn) {
+    setStickColor('crimson');
+  } else {
+    setStickColor('royalblue');
+  }
+
   const animation = setInterval(() => {
     stickEls.forEach(el => {
       el.textContent = Math.random() < 0.5 ? 'O' : 'X';
@@ -422,6 +430,8 @@ function processMove() {
   updateButtons();
   updatePieceSelectUI();
   resetYutDisplay();
+
+  resetStickColor();
 
   return true;
 }
@@ -853,3 +863,16 @@ function getDangerChangeScore(piece, nextPos, enemyPlayer) {
   return 0;
 }
 
+// 스틱 색 조정
+
+function setStickColor(color) {
+  document.querySelectorAll('.stick').forEach(stick => {
+    stick.style.color = color;
+  });
+}
+
+function resetStickColor() {
+  document.querySelectorAll('.stick').forEach(stick => {
+    stick.style.color = '';
+  });
+}
