@@ -220,8 +220,12 @@ function checkWinner(player) {
   if (score >= 4) {
     gameState.isGameOver = true;
 
-    document.getElementById('gameMessage').textContent = `${player} 플레이어 승리!`;
-    alert(`${player} 플레이어 승리!`);
+    const winnerText = player === 'A'
+      ? 'A (PLAYER)'
+      : 'B (CPU)';
+
+    document.getElementById('gameMessage').textContent = `${winnerText} 승리!`;
+    alert(`${winnerText} 승리!`);
 
     updateButtons();
   }
