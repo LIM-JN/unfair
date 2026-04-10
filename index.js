@@ -566,13 +566,66 @@ function runAITurn() {
 
 function selectBestAIPiece() {
   const movablePieces = getMovableAIPieces();
+
   if (movablePieces.length === 0) return null;
 
-  const selectedPiece = movablePieces[0]; // 일단 첫 번째
-  selectAIPiece(selectedPiece.id);
+  let bestPiece = null;
+  let bestScore = -Infinity;
 
-  return selectedPiece;
+  for (const piece of movablePieces) {
+    const score = evaluateAIMove(piece, gameState.move);
+    console.log(piece.id, 'score =', score);
+
+    if (score > bestScore) {
+      bestScore = score;
+      bestPiece = piece;
+    }
+  }
+
+  if (!bestPiece) return null;
+
+  const radio = document.querySelector(`input[name="p2"][value="${bestPiece.id}"]`);
+  if (radio) radio.checked = true;
+
+  return bestPiece;
 }
+
+// 핵심의사결정원인
+
+function evaluateAIMove(piece, move) {
+  let score = 0;
+
+  const nextPos = getSimulatedPosition(piece, move);
+
+  // 골
+  if (nextPos === 'goal') {
+    score += 80;
+  }
+
+  // 잡기
+  if (canCaptureAt(nextPos, 'A')) {
+    score += 100;
+  }
+
+  // 지름길
+  if (isShortcutEntry(piece, move)) {
+    score += 40;
+  }
+
+  // 안전
+  if (isSafePosition(nextPos)) {
+    score += 30;
+  }
+
+  // 위험
+  if (isDangerPosition(nextPos, 'A')) {
+    score -= 80;
+  }
+
+
+  return score;
+}
+
 
 function getMovableAIPieces() {
   return Object.values(pieces).filter(piece =>
@@ -588,4 +641,174 @@ function selectAIPiece(pieceId) {
 
   radio.checked = true;
   return true;
+}
+
+function getSimulatedPosition(piece, moveCount) {
+  let pos = piece.position;
+  let prev = piece.prev;
+  let useBranch = [5, 10, 103].includes(pos);
+
+  for (let i = 0; i < moveCount; i++) {
+    let next;
+
+    if (pos === 5) {
+      next = useBranch ? 101 : 6;
+    } else if (pos === 10) {
+      next = useBranch ? 201 : 11;
+    } else if (pos === 103) {
+      if (prev === 102) next = useBranch ? 203 : 104;
+      else if (prev === 202) next = 203;
+    } else {
+      next = boardPath[pos]?.next ?? null;
+    }
+
+    if (next === null || next === undefined) break;
+
+    // 분기 사용 후 끄기
+    if (
+      (pos === 5 && next === 101) ||
+      (pos === 10 && next === 201) ||
+      (pos === 103 && prev === 102 && next === 203)
+    ) {
+      useBranch = false;
+    }
+
+    prev = pos;
+    pos = next;
+
+    if (pos === 'goal') break;
+  }
+
+  return pos;
+}
+
+function getPossibleNextStates(pos, prev) {
+  const states = [];
+
+  if (pos === 5) {
+    states.push({ pos: 6, prev: 5 });
+    states.push({ pos: 101, prev: 5 });
+    return states;
+  }
+
+  if (pos === 10) {
+    states.push({ pos: 11, prev: 10 });
+    states.push({ pos: 201, prev: 10 });
+    return states;
+  }
+
+  if (pos === 103) {
+    if (prev === 102) {
+      states.push({ pos: 104, prev: 103 });
+      states.push({ pos: 203, prev: 103 });
+      return states;
+    }
+
+    if (prev === 202) {
+      states.push({ pos: 203, prev: 103 });
+      return states;
+    }
+  }
+
+  const next = boardPath[pos]?.next;
+  if (next !== undefined && next !== null) {
+    states.push({ pos: next, prev: pos });
+  }
+
+  return states;
+}
+
+function getDistance(piece, targetPos, maxSteps = 20) {
+  const queue = [
+    {
+      pos: piece.position,
+      prev: piece.prev,
+      dist: 0
+    }
+  ];
+
+  const visited = new Set();
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const key = `${current.pos}_${current.prev}`;
+
+    if (visited.has(key)) continue;
+    visited.add(key);
+
+    if (current.pos === targetPos) {
+      return current.dist;
+    }
+
+    if (current.dist >= maxSteps) continue;
+
+    const nextStates = getPossibleNextStates(current.pos, current.prev);
+
+    for (const nextState of nextStates) {
+      queue.push({
+        pos: nextState.pos,
+        prev: nextState.prev,
+        dist: current.dist + 1
+      });
+    }
+  }
+
+  return Infinity;
+}
+
+function isDangerPosition(targetPos, enemyPlayer) {
+  if (targetPos === 0 || targetPos === 'goal') return false;
+
+  const enemyPieces = Object.values(pieces).filter(piece =>
+    piece.player === enemyPlayer &&
+    piece.position !== 0 &&
+    piece.position !== 'goal' &&
+    piece.leaderId === null
+  );
+
+  for (const enemy of enemyPieces) {
+    const dist = getDistance(enemy, targetPos, 3);
+
+    if (dist >= 1 && dist <= 3) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function canCaptureAt(targetPos, enemyPlayer) {
+  if (targetPos === 0 || targetPos === 'goal') return false;
+
+  return Object.values(pieces).some(piece =>
+    piece.player === enemyPlayer &&
+    piece.position === targetPos &&
+    piece.position !== 0 &&
+    piece.position !== 'goal' &&
+    piece.leaderId === null
+  );
+}
+
+function isShortcutEntry(piece, move) {
+  const pos = piece.position;
+
+  // 시뮬레이션 결과 확인
+  const nextPos = getSimulatedPosition(piece, move);
+
+  // 5 → 101
+  if (pos === 5 && nextPos === 101) return true;
+
+  // 10 → 201
+  if (pos === 10 && nextPos === 201) return true;
+
+  // 103 → 203 (102에서 온 경우만)
+  if (pos === 103 && piece.prev === 102 && nextPos === 203) return true;
+
+  return false;
+}
+
+function isSafePosition(pos) {
+  const safePositions = [101, 102, 201, 202];
+
+  return safePositions.includes(pos);
 }
