@@ -321,16 +321,37 @@ function updateButtons() {
     return;
   }
 
+  const isATurn = gameState.currentPlayer === 'A';
+
+  // B턴이면 무조건 둘 다 비활성화
+  if (!isATurn) {
+    throwBtn.disabled = true;
+    moveBtn.disabled = true;
+    return;
+  }
+
+  // A턴일 때만 기존 로직 적용
   throwBtn.disabled = gameState.move > 0;
   moveBtn.disabled = gameState.move <= 0;
 }
 
 function switchTurn() {
   gameState.currentPlayer = gameState.currentPlayer === 'A' ? 'B' : 'A';
+
+  updateTurnUI();
+  updateButtons();
+
+  if (gameState.currentPlayer === 'B') {
+    setTimeout(runAITurn, 700);
+  }
 }
 
 function updateTurnUI() {
-  document.getElementById('turnText').textContent = gameState.currentPlayer;
+  const el = document.getElementById('turnText');
+  const isATurn = gameState.currentPlayer === 'A';
+
+  el.textContent = isATurn ? 'A (PLAYER)' : 'B (CPU)';
+  el.style.color = isATurn ? 'crimson' : 'royalblue';
 }
 
 function updatePieceSelectUI() {
@@ -341,7 +362,7 @@ function updatePieceSelectUI() {
   });
 
   document.querySelectorAll('input[name="p2"]').forEach(el => {
-    el.disabled = isATurn;
+    el.disabled = true;
   });
 }
 
@@ -370,20 +391,20 @@ function captureOpponentPieces(movedPiece) {
   return captured;
 }
 
-const moveBtn = document.querySelector('#moveBtn');
+// 이동핵심
 
-moveBtn.addEventListener('click', () => {
-  if (gameState.isGameOver) return;
+
+function processMove() {
+  if (gameState.isGameOver) return false;
 
   if (gameState.move <= 0) {
-    alert('먼저 윷을 던져서 이동값을 정하세요.');
-    return;
+    return false;
   }
 
   const moved = moveSelectedPiece(gameState.move);
 
   if (!moved) {
-    return;
+    return false;
   }
 
   const move = gameState.move;
@@ -394,9 +415,22 @@ moveBtn.addEventListener('click', () => {
   }
 
   updateTurnUI();
+  updateButtons();
   updatePieceSelectUI();
   resetYutDisplay();
-  updateButtons();
+
+  return true;
+}
+
+const moveBtn = document.querySelector('#moveBtn');
+
+moveBtn.addEventListener('click', () => {
+  if (gameState.move <= 0) {
+    alert('먼저 윷을 던져서 이동값을 정하세요.');
+    return;
+  }
+
+  processMove();
 });
 
 ////////// 업기 추가 코드
@@ -503,4 +537,55 @@ function sendPieceHome(piece) {
   piece.isStackHidden = false;
 
   renderPiece(piece);
+}
+
+
+///////////////////// 적 플레이어 로직 
+
+function runAITurn() {
+  if (gameState.isGameOver) return;
+  if (gameState.currentPlayer !== 'B') return;
+
+  throwYut();
+
+  setTimeout(() => {
+    // 여기서 AI가 말 선택
+    selectBestAIPiece();
+
+    setTimeout(() => {
+      processMove();
+
+      // 윷/모/잡기면 B턴이 유지될 수 있으니까 재귀적으로 다시 검사
+      if (!gameState.isGameOver && gameState.currentPlayer === 'B') {
+        setTimeout(runAITurn, 600);
+      }
+    }, 500);
+  }, 800);
+}
+
+
+function selectBestAIPiece() {
+  const movablePieces = getMovableAIPieces();
+  if (movablePieces.length === 0) return null;
+
+  const selectedPiece = movablePieces[0]; // 일단 첫 번째
+  selectAIPiece(selectedPiece.id);
+
+  return selectedPiece;
+}
+
+function getMovableAIPieces() {
+  return Object.values(pieces).filter(piece =>
+    piece.position !== 'goal' &&
+    piece.player === 'B' && 
+    piece.leaderId === null
+  );
+}
+
+function selectAIPiece(pieceId) {
+  const radio = document.querySelector(`input[name="p2"][value="${pieceId}"]`);
+  if (!radio) return false;
+
+  radio.checked = true;
+  return true;
 }
