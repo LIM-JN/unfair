@@ -807,8 +807,8 @@ function isShortcutEntry(piece, move) {
   if (nextPos === 10) return true;
 
   // 103 → 203 (102에서 온 경우만)
-  if ( pos >= 101 && pos <= 102 && nextPos === 203) return true;
-  if ( pos === 5 && nextPos === 203) return true;
+  if ( pos >= 101 && pos <= 102 && nextPos === 103) return true;
+  if ( pos === 5 && nextPos === 103) return true;
 
   return false;
 }
