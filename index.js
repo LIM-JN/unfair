@@ -578,7 +578,7 @@ function selectBestAIPiece() {
 
   for (const piece of movablePieces) {
     const score = evaluateAIMove(piece, gameState.move);
-    console.log(piece.id, 'score =', score);
+    // console.log(piece.id, 'score =', score);
 
     if (score > bestScore) {
       bestScore = score;
