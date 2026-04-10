@@ -597,31 +597,33 @@ function evaluateAIMove(piece, move) {
 
   const nextPos = getSimulatedPosition(piece, move);
 
-  // 골
   if (nextPos === 'goal') {
     score += 80;
   }
 
-  // 잡기
   if (canCaptureAt(nextPos, 'A')) {
     score += 100;
   }
 
-  // 지름길
+  if (canStackAt(nextPos, 'B', piece.id)) {
+    score += 60;
+  }
+
+  if (hasStackedFollowers(piece)) {
+    score += 50;
+  }
+
   if (isShortcutEntry(piece, move)) {
     score += 40;
   }
 
-  // 안전
   if (isSafePosition(nextPos)) {
     score += 30;
   }
 
-  // 위험
   if (isDangerPosition(nextPos, 'A')) {
     score -= 80;
   }
-
 
   return score;
 }
@@ -811,4 +813,23 @@ function isSafePosition(pos) {
   const safePositions = [101, 102, 201, 202];
 
   return safePositions.includes(pos);
+}
+
+function canStackAt(targetPos, player, movingPieceId) {
+  if (targetPos === 0 || targetPos === 'goal') return false;
+
+  return Object.values(pieces).some(piece =>
+    piece.player === player &&
+    piece.id !== movingPieceId &&
+    piece.position === targetPos &&
+    piece.position !== 0 &&
+    piece.position !== 'goal' &&
+    piece.leaderId === null
+  );
+}
+
+function hasStackedFollowers(piece) {
+  return Object.values(pieces).some(other =>
+    other.leaderId === piece.id
+  );
 }
