@@ -598,7 +598,7 @@ function evaluateAIMove(piece, move) {
   const nextPos = getSimulatedPosition(piece, move);
 
   if (nextPos === 'goal') {
-    score += 80;
+    score += 30;
   }
 
   if (canCaptureAt(nextPos, 'A')) {
@@ -606,7 +606,7 @@ function evaluateAIMove(piece, move) {
   }
 
   if (canStackAt(nextPos, 'B', piece.id)) {
-    score += 60;
+    score += 40;
   }
 
   if (hasStackedFollowers(piece)) {
@@ -614,16 +614,15 @@ function evaluateAIMove(piece, move) {
   }
 
   if (isShortcutEntry(piece, move)) {
-    score += 40;
+    score += 60;
   }
 
   if (isSafePosition(nextPos)) {
     score += 30;
   }
 
-  if (isDangerPosition(nextPos, 'A')) {
-    score -= 80;
-  }
+  // 기존 위험 감점 대신 변화 점수 반영
+  score += getDangerChangeScore(piece, nextPos, 'A');
 
   return score;
 }
@@ -798,13 +797,14 @@ function isShortcutEntry(piece, move) {
   const nextPos = getSimulatedPosition(piece, move);
 
   // 5 → 101
-  if (pos === 5 && nextPos === 101) return true;
+  if (nextPos === 5) return true;
 
   // 10 → 201
-  if (pos === 10 && nextPos === 201) return true;
+  if (nextPos === 10) return true;
 
   // 103 → 203 (102에서 온 경우만)
-  if (pos === 103 && piece.prev === 102 && nextPos === 203) return true;
+  if ( pos >= 101 && pos <= 102 && nextPos === 203) return true;
+  if ( pos === 5 && nextPos === 203) return true;
 
   return false;
 }
@@ -833,3 +833,19 @@ function hasStackedFollowers(piece) {
     other.leaderId === piece.id
   );
 }
+
+function getDangerChangeScore(piece, nextPos, enemyPlayer) {
+  if (piece.position === 0 || piece.position === 'goal') {
+    return isDangerPosition(nextPos, enemyPlayer) ? -80 : 0;
+  }
+
+  const currentDanger = isDangerPosition(piece.position, enemyPlayer);
+  const nextDanger = isDangerPosition(nextPos, enemyPlayer);
+
+  if (currentDanger && nextDanger) return 0;
+  if (currentDanger && !nextDanger) return 50;
+  if (!currentDanger && nextDanger) return -80;
+
+  return 0;
+}
+
