@@ -624,7 +624,7 @@ function evaluateAIMove(piece, move) {
   }
 
   if (hasStackedFollowers(piece)) {
-    score += 50;
+    score += 20;
   }
 
   if (isShortcutEntry(piece, move)) {
@@ -632,7 +632,7 @@ function evaluateAIMove(piece, move) {
   }
 
   if (isSafePosition(nextPos)) {
-    score += 30;
+    score += 50;
   }
 
   // 기존 위험 감점 대신 변화 점수 반영
