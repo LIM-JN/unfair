@@ -632,7 +632,7 @@ function evaluateAIMove(piece, move) {
   }
 
   if (isSafePosition(nextPos)) {
-    score += 25;
+    score += -1;
   }
 
   // 기존 위험 감점 대신 변화 점수 반영
