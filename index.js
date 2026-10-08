@@ -628,11 +628,11 @@ function evaluateAIMove(piece, move) {
   }
 
   if (isShortcutEntry(piece, move)) {
-    score += 60;
+    score += 56;
   }
 
   if (isSafePosition(nextPos)) {
-    score += 50;
+    score += 25;
   }
 
   // 기존 위험 감점 대신 변화 점수 반영
