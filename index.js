@@ -876,3 +876,34 @@ function resetStickColor() {
     stick.style.color = '';
   });
 }
+
+
+// 바깥선 그리기
+
+
+function createRectangle(point1, point2) {
+    const left = Math.min(point1.x, point2.x);
+    const top = Math.min(point1.y, point2.y);
+    const width = Math.abs(point1.x - point2.x);
+    const height = Math.abs(point1.y - point2.y);
+
+    const element = document.createElement('div');
+
+    element.style.position = 'absolute';
+    element.style.left = `${left}px`;
+    element.style.top = `${top}px`;
+    element.style.width = `${width}px`;
+    element.style.height = `${height}px`;
+    element.classList.add('outerLine')
+
+    // X자 선
+    element.style.setProperty('--width', `${width}px`);
+    element.style.setProperty('--height', `${height}px`);
+
+    document.querySelector('.board').appendChild(element);
+}
+
+createRectangle(
+    getNodeCenter(5),
+    getNodeCenter(15)
+);

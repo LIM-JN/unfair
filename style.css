@@ -104,29 +104,29 @@ main {
 
 /* 중앙 */
 .center {
-  top: 342px;
-  left: 342px;
+  top: 340px;
+  left: 340px;
 }
 
 /* 좌하 -> 중앙 -> 우상 */
 .p1 {
   top: 526px;
-  left: 158px;
+  left: 154px;
 }
 
 .p2 {
   top: 434px;
-  left: 250px;
+  left: 246px;
 }
 
 .p4 {
   top: 250px;
-  left: 434px;
+  left: 430px;
 }
 
 .p5 {
   top: 158px;
-  left: 526px;
+  left: 522px;
 }
 
 /* 좌상 -> 중앙 -> 우하 */
@@ -249,4 +249,29 @@ input[type="radio"]:disabled + label:hover {
 
 input[type="radio"]:checked + label {
     background-color: #ccc;
+}
+
+.board .outerLine {
+  border : 1px solid #444;
+  z-index: -1;
+}
+
+.board > .outerLine::before {
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.board > .outerLine::after {
+    transform: translate(-50%, -50%) rotate(-45deg);
+}
+
+.board > .outerLine::before,
+.board > .outerLine::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 130%;
+    height: 1px;
+    background: #444;
+    z-index: -2;
 }
