@@ -616,7 +616,7 @@ function evaluateAIMove(piece, move) {
   }
 
   if (canCaptureAt(nextPos, 'A')) {
-    score += 100;
+    score += 150;
   }
 
   if (canStackAt(nextPos, 'B', piece.id)) {
