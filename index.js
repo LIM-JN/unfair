@@ -157,11 +157,14 @@ throwBtn.addEventListener('click', throwYut);
 const board = document.querySelector('.board');
 
 function getNodeCenter(nodeId) {
-  const nodeEl = document.querySelector(`[data-node="${nodeId}"]`);
+
+  const target = nodeId === 0 ? 20 : nodeId;
+
+  const nodeEl = document.querySelector(`[data-node="${target}"]`);
   const boardRect = board.getBoundingClientRect();
 
   if (!nodeEl) {
-    console.warn(`data-node="${nodeId}" 요소를 찾을 수 없습니다.`);
+    console.warn(`data-node="${target}" 요소를 찾을 수 없습니다.`);
     return null;
   }
 
@@ -907,3 +910,26 @@ createRectangle(
     getNodeCenter(5),
     getNodeCenter(15)
 );
+
+
+// 처음 말 좌표 초기화 
+
+function initializePiecePositions() {
+  const pos = getNodeCenter(20);
+  if (!pos) return;
+
+  document.querySelectorAll('.piece').forEach(pieceEl => {
+    pieceEl.style.transition = 'none';
+    pieceEl.style.left = `${pos.x - pieceEl.offsetWidth / 2}px`;
+    pieceEl.style.top = `${pos.y - pieceEl.offsetHeight / 2}px`;
+  });
+
+  // 초기 위치 적용을 브라우저에 반영
+  board.offsetHeight;
+
+  document.querySelectorAll('.piece').forEach(pieceEl => {
+    pieceEl.style.removeProperty('transition');
+  });
+}
+
+initializePiecePositions()

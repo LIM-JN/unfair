@@ -59,15 +59,13 @@ body {
   justify-content: center;
 }
 
-main {
+main.board {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.board {
+  align-items: flex-end;
+  justify-content: flex-end;
   position: relative;
 }
+
 
 .grid {
   display: grid;
